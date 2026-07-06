@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- This tells the browser: "This is an HTML5 webpage" -->
+<html lang="en">
+  <head>
+    <!-- The head holds settings — the user doesn't see this part -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- This is the tab title that appears in the browser -->
+    <title>Smart Form Validator — by Babatunde Awoyemi</title>
+
+    <!-- Link to our CSS file for colours and design -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- Everything the user SEES goes inside body -->
+
+    <!-- The page header -->
+    <header>
+      <h1>Smart Form <span class="accent">Validator</span></h1>
+      <p>Type in each field and watch the magic happen!</p>
+      <p>Built by <strong>Babatunde Awoyemi</strong></p>
+    </header>
+
+    <!-- The main content area -->
+    <main>
+      <!-- The card that wraps all our fields -->
+      <div class="card">
+        <!-- ── FIELD 1: USERNAME ── -->
+        <div class="field">
+          <!-- The label tells the user what to type -->
+          <label for="username">👤 Username</label>
+
+          <!-- The input box where they type -->
+          <input type="text" id="username" placeholder="e.g. babatunde_99" />
+
+          <!-- A small grey hint below the box -->
+          <p class="hint">3–20 characters. Start with a letter.</p>
+
+          <!-- This empty paragraph will show our regex feedback -->
+          <p class="feedback" id="fb-username"></p>
+        </div>
+
+        <!-- ── FIELD 2: EMAIL ── -->
+        <div class="field">
+          <label for="email">📧 Email Address</label>
+          <input
+            type="text"
+            id="email"
+            placeholder="e.g. babatunde@example.com"
+          />
+          <p class="hint">Must look like name@domain.com</p>
+          <p class="feedback" id="fb-email"></p>
+        </div>
+
+        <!-- ── FIELD 3: PASSWORD ── -->
+        <div class="field">
+          <label for="password">🔐 Password</label>
+          <input type="password" id="password" placeholder="Make it strong!" />
+          <p class="hint">8+ chars with UPPER, lower, digit and symbol.</p>
+
+          <!-- This bar will fill up to show password strength -->
+          <div class="strength-bar-wrap">
+            <div class="strength-bar" id="strength-bar"></div>
+          </div>
+
+          <p class="feedback" id="fb-password"></p>
+        </div>
+
+        <!-- ── FIELD 4: PHONE ── -->
+        <div class="field">
+          <label for="phone">📱 Phone Number</label>
+          <input type="text" id="phone" placeholder="e.g. 08012345678" />
+          <p class="hint">Nigerian format: 08012345678</p>
+          <p class="feedback" id="fb-phone"></p>
+        </div>
+
+        <!-- ── FIELD 5: WEBSITE (optional) ── -->
+        <div class="field">
+          <label for="url">🌐 Website URL (optional)</label>
+          <input
+            type="text"
+            id="url"
+            placeholder="e.g. https://babatunde.dev"
+          />
+          <p class="hint">Must start with https://</p>
+          <p class="feedback" id="fb-url"></p>
+        </div>
+
+        <!-- The button — disabled until all fields are valid -->
+        <button id="submit-btn" disabled>Validate All Fields ✅</button>
+      </div>
+      <!-- end .card -->
+
+      <!-- ── RESULTS PANEL ── -->
+      <!-- Hidden at first — only appears after clicking the button -->
+      <div class="result-panel" id="result-panel" style="display: none">
+        <!-- This heading changes to show pass or fail -->
+        <h2 id="result-title"></h2>
+
+        <!-- This list fills up with one item per field -->
+        <ul id="result-list"></ul>
+      </div>
+
+      <!-- ── REGEX EXPLAINER BOX ── -->
+      <!-- Shows the actual patterns powering the page! -->
+      <div class="explainer">
+        <h3>🔍 The Regex Patterns Behind This Page</h3>
+        <ul>
+          <li>
+            <code>/^[a-zA-Z][a-zA-Z0-9_]{2,19}$/</code>
+            — Username
+          </li>
+          <li>
+            <code>/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/</code>
+            — Email
+          </li>
+          <li>
+            <code>/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$]).{8,}$/</code>
+            — Password
+          </li>
+          <li>
+            <code>/^\+?(?:234|0)[789]\d{9}$/</code>
+            — Nigerian Phone
+          </li>
+          <li>
+            <code>/^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/</code>
+            — URL
+          </li>
+        </ul>
+      </div>
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer>
+      <p>
+        🚀 Built by <strong>Babatunde Awoyemi</strong>
+        · Techbase STEM Academy · JavaScript Regex Lesson
+      </p>
+    </footer>
+
+    <!-- Link to our JavaScript file for the regex logic -->
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,278 @@
+/* ── BASIC RESET: removes default browser spacing ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── COLOUR & FONT TOKENS ── */
+/* These are like named paint tins we can reuse anywhere */
+:root {
+  --bg:       #0D0D1A;   /* very dark navy background */
+  --card:     #16162A;   /* slightly lighter card colour */
+  --border:   #2A2A4A;   /* subtle border colour */
+  --purple:   #7C3AED;   /* main purple accent */
+  --gold:     #FBBF24;   /* gold for headings */
+  --green:    #10B981;   /* success green */
+  --red:      #EF4444;   /* error red */
+  --text:     #E2E8F0;   /* main text colour */
+  --muted:    #64748B;   /* grey hint text */
+}
+
+/* ── BODY: the whole page background ── */
+body {
+  background:  var(--bg);
+  color:       var(--text);
+  font-family: Arial, sans-serif;
+  font-size:   16px;
+  line-height: 1.6;
+  padding:     2rem 1rem;
+  min-height:  100vh;
+}
+
+/* ── HEADER: the top title section ── */
+header {
+  text-align: center;
+  max-width:  600px;
+  margin:     0 auto 2rem;
+}
+
+header h1 {
+  font-size:   2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* The gold word "Validator" in the heading */
+.accent { color: var(--gold); }
+
+header p {
+  color:       var(--muted);
+  font-size:   0.95rem;
+  margin-top:  0.3rem;
+}
+
+header strong { color: var(--purple); }
+
+/* ── MAIN: centre the content ── */
+main {
+  max-width:      600px;
+  margin:         0 auto;
+  display:        flex;
+  flex-direction: column;
+  gap:            1.5rem;
+}
+
+/* ── CARD: the box that holds all the fields ── */
+.card {
+  background:    var(--card);
+  border:        1px solid var(--border);
+  border-radius: 12px;
+  padding:       2rem;
+  display:       flex;
+  flex-direction: column;
+  gap:           1.5rem;
+}
+
+/* ── FIELD: each label + input group ── */
+.field {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.35rem;
+}
+
+/* ── LABEL: the field name above the box ── */
+label {
+  font-weight: 600;
+  font-size:   0.95rem;
+}
+
+/* ── INPUT BOX: where the user types ── */
+input {
+  background:    var(--bg);
+  border:        1.5px solid var(--border);
+  border-radius: 8px;
+  padding:       0.65rem 0.9rem;
+  font-size:     0.95rem;
+  color:         var(--text);
+  outline:       none;
+  width:         100%;
+
+  /* Smooth colour change when focused or validated */
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+/* Glow when the user clicks into the box */
+input:focus {
+  border-color: var(--purple);
+  box-shadow:   0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+/* Green border when the input passes regex */
+input.valid {
+  border-color: var(--green);
+}
+
+/* Red border when the input fails regex */
+input.invalid {
+  border-color: var(--red);
+}
+
+/* ── HINT: small grey text below the input ── */
+.hint {
+  font-size: 0.78rem;
+  color:     var(--muted);
+}
+
+/* ── FEEDBACK: the validation message ── */
+.feedback {
+  font-size:   0.82rem;
+  font-weight: 500;
+  min-height:  1.2em;
+}
+
+/* Green text when valid */
+.feedback.ok  { color: var(--green); }
+
+/* Red text when invalid */
+.feedback.err { color: var(--red); }
+
+/* ── PASSWORD STRENGTH BAR ── */
+/* The grey track behind the bar */
+.strength-bar-wrap {
+  height:        5px;
+  background:    var(--border);
+  border-radius: 99px;
+  overflow:      hidden;
+}
+
+/* The coloured bar that grows as password gets stronger */
+.strength-bar {
+  height:        100%;
+  width:         0%;
+  border-radius: 99px;
+
+  /* Smoothly animate width and colour changes */
+  transition: width 0.35s ease, background 0.35s ease;
+}
+
+/* ── SUBMIT BUTTON ── */
+#submit-btn {
+  background:     var(--purple);
+  color:          white;
+  border:         none;
+  border-radius:  8px;
+  padding:        0.8rem 1.4rem;
+  font-size:      1rem;
+  font-weight:    600;
+  cursor:         pointer;
+  transition:     background 0.25s, transform 0.2s;
+  margin-top:     0.4rem;
+}
+
+/* Slightly lighter when hovered */
+#submit-btn:hover:not(:disabled) {
+  background:  #9333EA;
+  transform:   translateY(-2px);
+}
+
+/* Faded when disabled (not all fields valid yet) */
+#submit-btn:disabled {
+  opacity: 0.35;
+  cursor:  not-allowed;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align:  center;
+  margin-top:  3rem;
+  font-size:   0.82rem;
+  color:       var(--muted);
+}
+
+footer strong { color: var(--purple); }
+
+/* ── RESULTS PANEL ── */
+.result-panel {
+  background:    var(--card);
+  border:        1px solid var(--border);
+  border-radius: 12px;
+  padding:       1.6rem 2rem;
+
+  /* Smoothly slides down when it appears */
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-panel h2 {
+  font-size:     1.1rem;
+  font-weight:   700;
+  margin-bottom: 0.9rem;
+}
+
+/* Green heading when all fields pass */
+.result-panel h2.ok  { color: var(--green); }
+
+/* Red heading when some fields fail */
+.result-panel h2.err { color: var(--red); }
+
+/* The list of field results */
+#result-list {
+  list-style:     none;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.45rem;
+}
+
+#result-list li {
+  font-size: 0.9rem;
+}
+
+#result-list li.ok  { color: var(--green); }
+#result-list li.err { color: var(--red);   }
+
+/* ── REGEX EXPLAINER BOX ── */
+.explainer {
+  background:    var(--card);
+  border:        1px solid var(--border);
+
+  /* Gold left stripe — the signature design touch! */
+  border-left:   3px solid var(--gold);
+  border-radius: 12px;
+  padding:       1.4rem 1.6rem;
+}
+
+.explainer h3 {
+  font-size:     0.95rem;
+  font-weight:   600;
+  color:         var(--gold);
+  margin-bottom: 0.75rem;
+}
+
+.explainer ul {
+  list-style:     none;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.5rem;
+}
+
+.explainer li {
+  font-size: 0.8rem;
+  color:     var(--muted);
+  line-height: 1.5;
+}
+
+/* ── CODE TAGS (for the regex patterns) ── */
+code {
+  background:    rgba(124, 58, 237, 0.12);
+  color:         #A855F7;
+  padding:       0.1em 0.4em;
+  border-radius: 4px;
+  font-family:   'Courier New', monospace;
+  font-size:     0.82em;
+  word-break:    break-all;
+}
