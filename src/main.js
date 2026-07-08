@@ -34,22 +34,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById(fieldId);
     if (!input) return;
 
-    input.addEventListener("input", () => {
-      const value = input.value;
-      
-      // Perform validation check
-      const isValid = validateFieldValue(fieldId, value);
-      
-      // Update validation visual feedback (borders, text messages, icons)
-      renderFieldState(fieldId, isValid, value);
-      
-      // Password extra checklists
-      if (fieldId === "password") {
-        renderPasswordStrength(value);
-      }
-      
-      // Update form completion progress indicator
-      updateProgressRing();
+    ["input", "change"].forEach(eventType => {
+      input.addEventListener(eventType, () => {
+        const value = input.value;
+        
+        // Perform validation check
+        const isValid = validateFieldValue(fieldId, value);
+        
+        // Update validation visual feedback (borders, text messages, icons)
+        renderFieldState(fieldId, isValid, value);
+        
+        // Password extra checklists
+        if (fieldId === "password") {
+          renderPasswordStrength(value);
+        }
+        
+        // Update form completion progress indicator
+        updateProgressRing();
+      });
     });
   });
 
