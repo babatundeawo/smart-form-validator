@@ -50,10 +50,10 @@ export function updateProgressRing() {
   const progressText = document.getElementById("progress-percentage");
   if (!circle || !progressText) return;
 
-  // Calculate fields completed
-  const totalFields = Object.keys(fieldStates).length; // 5 fields
-  const completedCount = Object.values(fieldStates).filter(Boolean).length;
-  const percent = Math.round((completedCount / totalFields) * 100);
+  // Calculate progress based on required fields (total of 4 required)
+  const requiredFields = Object.keys(FIELD_CONFIGS).filter(id => FIELD_CONFIGS[id].required);
+  const completedCount = requiredFields.filter(id => fieldStates[id]).length;
+  const percent = Math.round((completedCount / requiredFields.length) * 100);
 
   // SVG circumference logic: r=20, C = 2 * PI * r = 125.66 (round to 126)
   const circumference = 126;
@@ -247,6 +247,12 @@ export function triggerConfetti() {
   function animate() {
     if (!confettiActive) return;
     
+    // Adjust canvas dimensions dynamically to avoid window resize listeners leaks
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -265,10 +271,4 @@ export function triggerConfetti() {
   }
 
   animate();
-
-  // Handle window resizing
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
 }
