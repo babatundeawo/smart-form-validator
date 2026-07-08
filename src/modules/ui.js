@@ -54,22 +54,6 @@ export function updateProgressRing() {
   }
 }
 
-export function initExplainerHighlights() {
-  const inputs = document.querySelectorAll('.card input, .card textarea, .card .dropzone');
-  inputs.forEach((input) => {
-    const fieldId = input.id;
-    const explainerCard = document.getElementById(`explain-${fieldId}`);
-
-    input.addEventListener('focus', () => {
-      if (explainerCard) explainerCard.classList.add('highlighted');
-    });
-
-    input.addEventListener('blur', () => {
-      if (explainerCard) explainerCard.classList.remove('highlighted');
-    });
-  });
-}
-
 export function renderFieldState(fieldId, isValid, value) {
   const feedback = document.getElementById(`fb-${fieldId}`);
   const statusIcon = document.getElementById(`status-icon-${fieldId}`);
@@ -144,102 +128,6 @@ export function renderPasswordStrength(value) {
 }
 
 let lastUnlockedBadgeIds = [];
-
-export function initOnboardingTour() {
-  const overlay = document.getElementById('onboarding-overlay');
-  const stepNumber = document.getElementById('onboarding-step-number');
-  const title = document.getElementById('onboarding-title');
-  const copy = document.getElementById('onboarding-copy');
-  const nextBtn = document.getElementById('onboarding-next');
-  const skipBtn = document.getElementById('onboarding-skip');
-
-  if (!overlay || !stepNumber || !title || !copy || !nextBtn || !skipBtn) return;
-
-  if (localStorage.getItem('magical-validator-tour-complete') === 'true') {
-    overlay.hidden = true;
-    return;
-  }
-
-  const steps = [
-    {
-      title: 'Welcome to the mission',
-      copy: 'Start by choosing a nickname. Each valid field will light up and fill your progress ring.',
-      target: '#username'
-    },
-    {
-      title: 'Watch your progress grow',
-      copy: 'Complete the required fields to unlock badges and keep the mission moving.',
-      target: '.progress-container'
-    },
-    {
-      title: 'Test your pattern instincts',
-      copy: 'Open the sandbox to try regex ideas and compare them against real sample strings.',
-      target: '.sandbox'
-    },
-    {
-      title: 'Launch when ready',
-      copy: 'Once everything looks good, submit and celebrate your unlocked badges.',
-      target: '#submit-btn'
-    }
-  ];
-
-  let currentStep = 0;
-
-  const clearHighlight = () => {
-    document.querySelectorAll('.tour-target-active').forEach((element) => element.classList.remove('tour-target-active'));
-  };
-
-  const showStep = () => {
-    clearHighlight();
-    const step = steps[currentStep];
-    if (!step) {
-      overlay.hidden = true;
-      localStorage.setItem('magical-validator-tour-complete', 'true');
-      return;
-    }
-
-    stepNumber.textContent = `${currentStep + 1}`;
-    title.textContent = step.title;
-    copy.textContent = step.copy;
-    nextBtn.textContent = currentStep === steps.length - 1 ? 'Start mission' : 'Next';
-
-    const target = document.querySelector(step.target);
-    if (target) target.classList.add('tour-target-active');
-    overlay.hidden = false;
-  };
-
-  const finishTour = () => {
-    clearHighlight();
-    overlay.hidden = true;
-    localStorage.setItem('magical-validator-tour-complete', 'true');
-  };
-
-  const handleNextClick = (event) => {
-    event?.preventDefault();
-    currentStep += 1;
-    if (currentStep >= steps.length) {
-      finishTour();
-      return;
-    }
-    showStep();
-  };
-
-  nextBtn.addEventListener('click', handleNextClick);
-
-  skipBtn.addEventListener('click', (event) => {
-    event?.preventDefault();
-    finishTour();
-  });
-  overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) finishTour();
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (!overlay.hidden && event.key === 'Escape') finishTour();
-  });
-
-  showStep();
-}
 
 export function renderAchievements(unlockedIds = []) {
   const panel = document.getElementById('achievement-summary');

@@ -9,12 +9,10 @@ import {
   initThemeToggle,
   initPasswordVisibility,
   updateProgressRing,
-  initExplainerHighlights,
   renderFieldState,
   renderPasswordStrength,
   triggerSuccessCelebration,
-  renderAchievements,
-  initOnboardingTour
+  renderAchievements
 } from './modules/ui.js';
 import {
   initClipboardHelpers,
@@ -202,8 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initPasswordVisibility();
   initClipboardHelpers();
   initRegexSandbox();
-  initExplainerHighlights();
-  initOnboardingTour();
   bindFieldInputs();
   bindFileDropzone();
 
