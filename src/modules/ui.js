@@ -1,268 +1,343 @@
-import { evaluatePasswordStrength, FIELD_CONFIGS, fieldStates, isFormValid } from "./validators";
+import { evaluatePasswordStrength, FIELD_CONFIGS, fieldStates, isFormValid } from './validators.js';
 
-// ── THEME MANAGER ──
 export function initThemeToggle() {
-  const toggleBtn = document.getElementById("theme-toggle");
+  const toggleBtn = document.getElementById('theme-toggle');
   if (!toggleBtn) return;
-
-  // Check saved theme or default to light
-  const currentTheme = localStorage.getItem("theme") || "light";
-  document.documentElement.setAttribute("data-theme", currentTheme);
+  const currentTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
   updateThemeIcon(toggleBtn, currentTheme);
 
-  toggleBtn.addEventListener("click", () => {
-    const activeTheme = document.documentElement.getAttribute("data-theme");
-    const nextTheme = activeTheme === "dark" ? "light" : "dark";
-    
-    document.documentElement.setAttribute("data-theme", nextTheme);
-    localStorage.setItem("theme", nextTheme);
+  toggleBtn.addEventListener('click', () => {
+    const activeTheme = document.documentElement.getAttribute('data-theme');
+    const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
     updateThemeIcon(toggleBtn, nextTheme);
   });
 }
 
 function updateThemeIcon(btn, theme) {
-  if (theme === "dark") {
-    btn.innerHTML = "☀️";
-    btn.setAttribute("aria-label", "Switch to light theme");
-  } else {
-    btn.innerHTML = "🌙";
-    btn.setAttribute("aria-label", "Switch to dark theme");
-  }
+  btn.innerHTML = theme === 'dark' ? '🌙' : '☀️';
+  btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
 }
 
-// ── PASSWORD VISIBILITY TOGGLE ──
 export function initPasswordVisibility() {
-  const toggleBtn = document.getElementById("password-toggle");
-  const passwordInput = document.getElementById("password");
-
+  const toggleBtn = document.getElementById('password-toggle');
+  const passwordInput = document.getElementById('password');
   if (!toggleBtn || !passwordInput) return;
 
-  toggleBtn.addEventListener("click", () => {
-    const isPassword = passwordInput.getAttribute("type") === "password";
-    passwordInput.setAttribute("type", isPassword ? "text" : "password");
-    toggleBtn.innerHTML = isPassword ? "🙈" : "👁️";
+  toggleBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.getAttribute('type') === 'password';
+    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+    toggleBtn.innerHTML = isPassword ? '🙈' : '👁️';
   });
 }
 
-// ── CIRCULAR PROGRESS RING ──
 export function updateProgressRing() {
-  const circle = document.getElementById("progress-circle");
-  const progressText = document.getElementById("progress-percentage");
+  const circle = document.getElementById('progress-circle');
+  const progressText = document.getElementById('progress-percentage');
   if (!circle || !progressText) return;
 
-  // Calculate progress based on required fields (total of 4 required)
-  const requiredFields = Object.keys(FIELD_CONFIGS).filter(id => FIELD_CONFIGS[id].required);
-  const completedCount = requiredFields.filter(id => fieldStates[id]).length;
+  const requiredFields = Object.keys(FIELD_CONFIGS).filter((id) => FIELD_CONFIGS[id].required);
+  const completedCount = requiredFields.filter((id) => fieldStates[id]).length;
   const percent = Math.round((completedCount / requiredFields.length) * 100);
-
-  // SVG circumference logic: r=20, C = 2 * PI * r = 125.66 (round to 126)
   const circumference = 126;
   const offset = circumference - (percent / 100) * circumference;
-  
+
   circle.style.strokeDashoffset = offset;
   progressText.textContent = `${percent}%`;
 
-  const submitBtn = document.getElementById("submit-btn");
+  const submitBtn = document.getElementById('submit-btn');
   if (submitBtn) {
     submitBtn.disabled = !isFormValid();
+    submitBtn.textContent = isFormValid() ? 'Launch the Mission 🚀' : 'Complete every field';
   }
 }
 
-// ── HIGHLIGHT ACTIVE FIELD IN EXPLAINER ──
 export function initExplainerHighlights() {
-  const inputs = document.querySelectorAll(".card input");
-
-  inputs.forEach(input => {
+  const inputs = document.querySelectorAll('.card input, .card textarea, .card .dropzone');
+  inputs.forEach((input) => {
     const fieldId = input.id;
     const explainerCard = document.getElementById(`explain-${fieldId}`);
-    
-    input.addEventListener("focus", () => {
-      if (explainerCard) {
-        explainerCard.classList.add("highlighted");
-        // Scroll explainer into view on small screens if side-by-side isn't active
-        if (window.innerWidth < 768) {
-          // Subtle scrolling
-        }
-      }
+
+    input.addEventListener('focus', () => {
+      if (explainerCard) explainerCard.classList.add('highlighted');
     });
 
-    input.addEventListener("blur", () => {
-      if (explainerCard) {
-        explainerCard.classList.remove("highlighted");
-      }
+    input.addEventListener('blur', () => {
+      if (explainerCard) explainerCard.classList.remove('highlighted');
     });
   });
 }
 
-// ── RENDER INDIVIDUAL FIELD STATES ──
 export function renderFieldState(fieldId, isValid, value) {
-  const input = document.getElementById(fieldId);
   const feedback = document.getElementById(`fb-${fieldId}`);
   const statusIcon = document.getElementById(`status-icon-${fieldId}`);
   const config = FIELD_CONFIGS[fieldId];
+  if (!feedback || !config) return;
 
-  if (!input || !feedback) return;
+  const input = fieldId === 'file'
+    ? document.getElementById('file-dropzone')
+    : document.getElementById(fieldId);
 
-  // Reset classes
-  input.classList.remove("valid", "invalid");
-  feedback.classList.remove("visible", "ok", "err");
-  feedback.textContent = "";
+  if (input) {
+    input.classList.remove('valid', 'invalid');
+  }
+  feedback.classList.remove('visible', 'ok', 'err', 'pending');
+  feedback.textContent = '';
 
   if (statusIcon) {
-    statusIcon.classList.remove("visible");
+    statusIcon.classList.remove('visible');
   }
 
-  // Handle empty
-  if (value.trim() === "") {
-    if (statusIcon) statusIcon.innerHTML = "";
+  if (String(value).trim() === '') {
+    if (statusIcon) statusIcon.innerHTML = '';
     return;
   }
 
   if (isValid) {
-    input.classList.add("valid");
+    if (input) input.classList.add('valid');
     feedback.textContent = config.okMessage;
-    feedback.classList.add("visible", "ok");
+    feedback.classList.add('visible', 'ok');
     if (statusIcon) {
-      statusIcon.innerHTML = "🌟";
-      statusIcon.classList.add("visible");
+      statusIcon.innerHTML = '🌟';
+      statusIcon.classList.add('visible');
     }
   } else {
-    input.classList.add("invalid");
+    if (input) input.classList.add('invalid');
     feedback.textContent = config.errorMessage;
-    feedback.classList.add("visible", "err");
+    feedback.classList.add('visible', 'err');
     if (statusIcon) {
-      statusIcon.innerHTML = "⚠️";
-      statusIcon.classList.add("visible");
+      statusIcon.innerHTML = '⚠️';
+      statusIcon.classList.add('visible');
     }
   }
 }
 
-// ── PASSWORD STRENGTH RENDERER ──
 export function renderPasswordStrength(value) {
-  const segments = document.querySelectorAll(".strength-segment");
-  const criteriaContainer = document.getElementById("password-criteria-list");
+  const meterFill = document.getElementById('strength-meter-fill');
+  const strengthScore = document.getElementById('strength-score');
+  const criteriaContainer = document.getElementById('password-criteria-list');
 
-  if (value.trim() === "") {
-    segments.forEach(seg => seg.style.background = "transparent");
-    if (criteriaContainer) {
-      criteriaContainer.querySelectorAll(".criterion").forEach(crit => {
-        crit.classList.remove("passed");
-      });
-    }
+  if (!meterFill || !strengthScore || !criteriaContainer) return;
+
+  if (String(value).trim() === '') {
+    meterFill.style.width = '0%';
+    strengthScore.textContent = 'Entropy score: 0 bits';
+    criteriaContainer.querySelectorAll('.criterion').forEach((crit) => crit.classList.remove('passed'));
     return;
   }
 
-  const { criteria, score } = evaluatePasswordStrength(value);
+  const { criteria, score, entropyBits, strengthLabel } = evaluatePasswordStrength(value);
+  const percent = Math.max(0, Math.min(100, (score / 5) * 100));
+  meterFill.style.width = `${percent}%`;
+  meterFill.style.background = score <= 1 ? 'var(--error)' : score <= 3 ? 'var(--warning)' : score === 4 ? 'var(--accent)' : 'var(--success)';
+  strengthScore.textContent = `${strengthLabel} · ${entropyBits} bits`;
 
-  // Update segments
-  segments.forEach((seg, index) => {
-    if (index < score) {
-      // Color coding based on strength score
-      if (score <= 2) {
-        seg.style.background = "var(--error)"; // Red
-      } else if (score <= 4) {
-        seg.style.background = "var(--warning)"; // Orange/Amber
-      } else {
-        seg.style.background = "var(--success)"; // Green
-      }
-    } else {
-      seg.style.background = "transparent";
+  Object.entries(criteria).forEach(([key, passed]) => {
+    const el = document.getElementById(`crit-${key}`);
+    if (el) {
+      if (passed) el.classList.add('passed');
+      else el.classList.remove('passed');
     }
   });
-
-  // Update checkmarks
-  if (criteriaContainer) {
-    for (const [key, passed] of Object.entries(criteria)) {
-      const el = document.getElementById(`crit-${key}`);
-      if (el) {
-        if (passed) {
-          el.classList.add("passed");
-        } else {
-          el.classList.remove("passed");
-        }
-      }
-    }
-  }
 }
 
-// ── CONFETTI ANIMATION ENGINE ──
+let lastUnlockedBadgeIds = [];
+
+export function initOnboardingTour() {
+  const overlay = document.getElementById('onboarding-overlay');
+  const stepNumber = document.getElementById('onboarding-step-number');
+  const title = document.getElementById('onboarding-title');
+  const copy = document.getElementById('onboarding-copy');
+  const nextBtn = document.getElementById('onboarding-next');
+  const skipBtn = document.getElementById('onboarding-skip');
+
+  if (!overlay || !stepNumber || !title || !copy || !nextBtn || !skipBtn) return;
+
+  if (localStorage.getItem('magical-validator-tour-complete') === 'true') {
+    overlay.hidden = true;
+    return;
+  }
+
+  const steps = [
+    {
+      title: 'Welcome to the mission',
+      copy: 'Start by choosing a nickname. Each valid field will light up and fill your progress ring.',
+      target: '#username'
+    },
+    {
+      title: 'Watch your progress grow',
+      copy: 'Complete the required fields to unlock badges and keep the mission moving.',
+      target: '.progress-container'
+    },
+    {
+      title: 'Test your pattern instincts',
+      copy: 'Open the sandbox to try regex ideas and compare them against real sample strings.',
+      target: '.sandbox'
+    },
+    {
+      title: 'Launch when ready',
+      copy: 'Once everything looks good, submit and celebrate your unlocked badges.',
+      target: '#submit-btn'
+    }
+  ];
+
+  let currentStep = 0;
+
+  const clearHighlight = () => {
+    document.querySelectorAll('.tour-target-active').forEach((element) => element.classList.remove('tour-target-active'));
+  };
+
+  const showStep = () => {
+    clearHighlight();
+    const step = steps[currentStep];
+    if (!step) {
+      overlay.hidden = true;
+      localStorage.setItem('magical-validator-tour-complete', 'true');
+      return;
+    }
+
+    stepNumber.textContent = `${currentStep + 1}`;
+    title.textContent = step.title;
+    copy.textContent = step.copy;
+    nextBtn.textContent = currentStep === steps.length - 1 ? 'Start mission' : 'Next';
+
+    const target = document.querySelector(step.target);
+    if (target) target.classList.add('tour-target-active');
+    overlay.hidden = false;
+  };
+
+  const finishTour = () => {
+    clearHighlight();
+    overlay.hidden = true;
+    localStorage.setItem('magical-validator-tour-complete', 'true');
+  };
+
+  const handleNextClick = (event) => {
+    event?.preventDefault();
+    currentStep += 1;
+    if (currentStep >= steps.length) {
+      finishTour();
+      return;
+    }
+    showStep();
+  };
+
+  nextBtn.addEventListener('click', handleNextClick);
+
+  skipBtn.addEventListener('click', (event) => {
+    event?.preventDefault();
+    finishTour();
+  });
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) finishTour();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (!overlay.hidden && event.key === 'Escape') finishTour();
+  });
+
+  showStep();
+}
+
+export function renderAchievements(unlockedIds = []) {
+  const panel = document.getElementById('achievement-summary');
+  if (!panel) return;
+
+  const normalizedIds = [...new Set(unlockedIds)];
+  const newlyUnlocked = normalizedIds.filter((id) => !lastUnlockedBadgeIds.includes(id));
+  const badges = normalizedIds.length
+    ? normalizedIds.map((id) => {
+      const badge = ['regex-rookie', 'mailbox-master', 'security-sentinel', 'signal-keeper', 'age-gate', 'github-galaxy', 'data-overlord', 'archive-keeper'].includes(id)
+        ? {
+          id,
+          title: id.replace(/-/g, ' '),
+          description: 'Unlocked in the mission log.',
+          icon: '🏅'
+        }
+        : null;
+      return badge;
+    }).filter(Boolean)
+    : [];
+
+  panel.innerHTML = badges.length
+    ? `<h3>Unlocked Badges</h3><div class="achievement-grid">${badges.map((badge) => `<div class="achievement-card${newlyUnlocked.includes(badge.id) ? ' just-unlocked' : ''}" data-badge-id="${badge.id}"><span class="achievement-icon">🏅</span><strong>${badge.title}</strong><p>${badge.description}</p></div>`).join('')}</div>`
+    : '<h3>Unlocked Badges</h3><p class="achievement-empty">No badges yet — complete the mission to begin your collection.</p>';
+
+  if (newlyUnlocked.length) {
+    panel.classList.remove('achievement-panel-celebrate');
+    void panel.offsetWidth;
+    panel.classList.add('achievement-panel-celebrate');
+    triggerSuccessCelebration();
+    window.setTimeout(() => panel.classList.remove('achievement-panel-celebrate'), 1800);
+  }
+
+  lastUnlockedBadgeIds = normalizedIds;
+}
+
 let confettiActive = false;
-export function triggerConfetti() {
-  const canvas = document.getElementById("confetti-canvas");
+export function triggerSuccessCelebration() {
+  const canvas = document.getElementById('confetti-canvas');
   if (!canvas || confettiActive) return;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const colors = [
-    "#8b5cf6", "#ec4899", "#10b981", "#3b82f6", 
-    "#f59e0b", "#ff007f", "#00ffff", "#ffff00"
-  ];
+  const colors = ['#8b5cf6', '#ec4899', '#00d4ff', '#20f5b0', '#ffb84d'];
+  const particles = Array.from({ length: 180 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    size: Math.random() * 8 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speedY: Math.random() * 5 + 4,
+    speedX: Math.random() * 4 - 2,
+    rotation: Math.random() * 360,
+    rotationSpeed: Math.random() * 4 - 2
+  }));
 
-  const particles = [];
-  const particleCount = 150;
-
-  class ConfettiParticle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height - canvas.height;
-      this.size = Math.random() * 8 + 6;
-      this.color = colors[Math.floor(Math.random() * colors.length)];
-      this.speedY = Math.random() * 5 + 4;
-      this.speedX = Math.random() * 4 - 2;
-      this.rotation = Math.random() * 360;
-      this.rotationSpeed = Math.random() * 4 - 2;
-    }
-
-    update() {
-      this.y += this.speedY;
-      this.x += this.speedX;
-      this.rotation += this.rotationSpeed;
-
-      if (this.y > canvas.height) {
-        this.y = -20;
-        this.x = Math.random() * canvas.width;
-      }
-    }
-
-    draw() {
-      ctx.save();
-      ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
-      ctx.rotate((this.rotation * Math.PI) / 180);
-      ctx.fillStyle = this.color;
-      ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-      ctx.restore();
-    }
-  }
-
-  // Populate particles
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new ConfettiParticle());
-  }
-
+  const rocket = { x: canvas.width / 2, y: canvas.height - 100, size: 18, velocityY: -7 };
   confettiActive = true;
   let startTime = Date.now();
 
   function animate() {
     if (!confettiActive) return;
-    
-    // Adjust canvas dimensions dynamically to avoid window resize listeners leaks
     if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    particles.forEach(p => {
-      p.update();
-      p.draw();
+    particles.forEach((particle) => {
+      particle.y += particle.speedY;
+      particle.x += particle.speedX;
+      particle.rotation += particle.rotationSpeed;
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate((particle.rotation * Math.PI) / 180);
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+      ctx.restore();
     });
 
-    // Check timer (run confetti for 4 seconds)
-    if (Date.now() - startTime < 4000) {
+    rocket.y += rocket.velocityY;
+    rocket.velocityY *= 0.98;
+    ctx.save();
+    ctx.translate(rocket.x, rocket.y);
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.moveTo(0, -rocket.size * 2);
+    ctx.lineTo(rocket.size, rocket.size);
+    ctx.lineTo(0, rocket.size / 2);
+    ctx.lineTo(-rocket.size, rocket.size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#00d4ff';
+    ctx.fillRect(-rocket.size / 2, rocket.size / 2, rocket.size, rocket.size / 1.4);
+    ctx.restore();
+
+    if (Date.now() - startTime < 3200) {
       requestAnimationFrame(animate);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);

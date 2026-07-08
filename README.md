@@ -23,8 +23,8 @@ Features a playful light pastel design system, progress indicators, secret code 
 
 - **Core**: HTML5 (Semantic & Accessible with `aria-describedby` and `aria-live` screen-reader tags).
 - **Styling**: Vanilla CSS (Custom properties, HSL dynamic themes, Flexbox, Grid, keyframe animations, glassmorphic layout).
-- **Logic**: Modular ES6+ JavaScript (`src/modules/`) bundled by Vite.
-- **Build Stack**: Vite 6 (esbuild minification, relative assets paths, development HMR server).
+- **Logic**: Modular ES6+ JavaScript (`src/modules/`) loaded directly in the browser.
+- **Hosting**: Static files for GitHub Pages, with no build step required.
 
 ---
 
@@ -47,23 +47,14 @@ Features a playful light pastel design system, progress indicators, secret code 
 
 ---
 
-## 💻 How to Run & Build
+## 💻 How to Run
 
-Make sure you have [Node.js](https://nodejs.org/) installed, then navigate to the project directory and run:
+This project is ready to host as a static site on GitHub Pages.
 
-### 1. Install Dependencies
-```bash
-npm install
-```
+### 1. Open the app locally
+You can open [index.html](index.html) directly in a browser, or serve the folder with any simple static server.
 
-### 2. Run the Development Server
-```bash
-npm run dev
-```
-Open your browser to [http://localhost:3000](http://localhost:3000) to view the live site with Hot Module Replacement!
+### 2. Publish on GitHub Pages
+Upload the repository contents to GitHub and enable GitHub Pages for the root folder.
 
-### 3. Compile Production Bundle
-```bash
-npm run build
-```
-Generates a highly-optimized static bundle in the `dist/` directory.
+No build step is required.

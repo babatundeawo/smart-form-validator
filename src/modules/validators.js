@@ -1,68 +1,115 @@
-// ── REGEX PATTERN CONSTANTS ──
 export const PATTERNS = {
-  username: /^[a-zA-Z][a-zA-Z0-9_]{2,19}$/,
+  username: /^(?=.{3,20}$)[a-zA-Z][a-zA-Z0-9_]*$/,
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-  // 8+ characters with at least one lowercase, one uppercase, one number, and one special symbol
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-]).{8,}$/,
-  // Nigerian Format: Starts with +234 or 0, followed by 7/8/9, followed by 9 digits
-  phone: /^\+?(?:234|0)[789]\d{9}$/,
-  // Must start with http:// or https://
-  url: /^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/
+  phone: /^(?:\+?(?:234|0)[789]\d{9}|\+?\d{11})$/,
+  url: /^https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/,
+  github: /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i,
+  postal: /^(?:\d{6}|\d{5}(?:-\d{4})?|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i
 };
 
-// ── FIELD CONFIGURATION ──
 export const FIELD_CONFIGS = {
   username: {
     pattern: PATTERNS.username,
-    okMessage: "🛸 Woohoo! Awesome nickname!",
-    errorMessage: "Start with a letter. Use 3–20 letters or numbers, no spaces!",
+    okMessage: '🛸 Nickname accepted by the galaxy.',
+    errorMessage: 'Start with a letter and use 3–20 letters, digits, or underscores.',
     required: true,
-    label: "Coder Nickname"
+    label: 'Coder Nickname'
   },
   email: {
     pattern: PATTERNS.email,
-    okMessage: "✉️ Superb! Your mailbox is ready!",
-    errorMessage: "Needs a standard mailbox form (e.g. name@mailbox.com).",
+    okMessage: '✉️ Mailbox is operational.',
+    errorMessage: 'Please enter a standard email address.',
     required: true,
-    label: "Magic Mailbox"
+    label: 'Developer Mailbox'
   },
   password: {
     pattern: PATTERNS.password,
-    okMessage: "🔑 Wow! That code is super secure! You are a master coder! 🐱‍💻",
-    errorMessage: "Complete the star checks below to make it safe!",
+    okMessage: '🔐 Security sentinel unlocked.',
+    errorMessage: 'Use at least 8 characters with upper, lower, number, and symbol.',
     required: true,
-    label: "Secret Code"
+    label: 'Access Key'
   },
   phone: {
     pattern: PATTERNS.phone,
-    okMessage: "📞 Ring ring! Active connection found!",
-    errorMessage: "Type a Nigerian phone link (starts with 0 or +234).",
+    okMessage: '📡 Signal pattern confirmed.',
+    errorMessage: 'Use a valid Nigerian-style number or international format.',
     required: true,
-    label: "Walkie-Talkie Number"
+    label: 'Signal Number'
+  },
+  dob: {
+    pattern: PATTERNS.username,
+    okMessage: '🎂 Access granted to the academy.',
+    errorMessage: 'You must be at least 13 years old.',
+    required: true,
+    label: 'Date of Birth'
+  },
+  github: {
+    pattern: PATTERNS.github,
+    okMessage: '🐙 GitHub identity looks correct.',
+    errorMessage: 'Use 1–39 characters, letters, numbers, or single hyphens.',
+    required: true,
+    label: 'GitHub Username'
+  },
+  postal: {
+    pattern: PATTERNS.postal,
+    okMessage: '📮 Postal code matched the network.',
+    errorMessage: 'Enter a 6-digit Nigerian code or common ZIP format.',
+    required: true,
+    label: 'Postal / ZIP Code'
   },
   url: {
     pattern: PATTERNS.url,
-    okMessage: "🚀 Beep boop! Awesome toy website link!",
-    errorMessage: "Toy link must start with http:// or https://.",
-    required: false, // Optional field
-    label: "Toy Website Link"
+    okMessage: '🌐 Portfolio link is live.',
+    errorMessage: 'Optional links need http:// or https://.',
+    required: false,
+    label: 'Portfolio Link'
+  },
+  file: {
+    pattern: /\.(jpg|jpeg|png|pdf)$/i,
+    okMessage: '📁 File accepted for the archive.',
+    errorMessage: 'Upload a JPG, PNG, or PDF file up to 2MB.',
+    required: true,
+    label: 'Profile Upload'
   }
 };
 
-// ── FIELD STATE TRACKER ──
 export const fieldStates = {
   username: false,
   email: false,
   password: false,
   phone: false,
-  url: true // Starts true since optional URL is empty by default
+  dob: false,
+  github: false,
+  postal: false,
+  url: true,
+  file: false
 };
 
-/**
- * Calculates detailed password strength criteria checks.
- * @param {string} value 
- * @returns {object} Object detailing which rules passed, plus overall score (0-5)
- */
+export const ACHIEVEMENT_BADGES = [
+  { id: 'regex-rookie', field: 'username', title: 'Regex Rookie', description: 'Unlocked by securing a valid coder nickname.', icon: '🧠' },
+  { id: 'mailbox-master', field: 'email', title: 'Mailbox Master', description: 'Unlocked by validating a real developer mailbox.', icon: '📬' },
+  { id: 'security-sentinel', field: 'password', title: 'Security Sentinel', description: 'Unlocked by building a strong access key.', icon: '🛡️' },
+  { id: 'signal-keeper', field: 'phone', title: 'Signal Keeper', description: 'Unlocked by validating the contact signal.', icon: '📡' },
+  { id: 'age-gate', field: 'dob', title: 'Age Gate', description: 'Unlocked by proving a valid age threshold.', icon: '🎂' },
+  { id: 'github-galaxy', field: 'github', title: 'GitHub Galaxy', description: 'Unlocked by matching GitHub naming rules.', icon: '🐙' },
+  { id: 'data-overlord', field: 'postal', title: 'Data Overlord', description: 'Unlocked by passing address validation.', icon: '🗺️' },
+  { id: 'archive-keeper', field: 'file', title: 'Archive Keeper', description: 'Unlocked by uploading a valid profile artifact.', icon: '📁' }
+];
+
+function isAtLeast13YearsOld(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const birth = new Date(year, month - 1, day);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age -= 1;
+  }
+  return age >= 13;
+}
+
 export function evaluatePasswordStrength(value) {
   const criteria = {
     length: value.length >= 8,
@@ -73,33 +120,48 @@ export function evaluatePasswordStrength(value) {
   };
 
   const score = Object.values(criteria).filter(Boolean).length;
+  const poolSize = [criteria.lowercase, criteria.uppercase, criteria.number, criteria.special]
+    .filter(Boolean).length;
+  const entropyBits = value.length > 0 && poolSize > 0
+    ? Math.round(value.length * Math.log2(Math.pow(26, Number(criteria.lowercase)) * Math.pow(26, Number(criteria.uppercase)) * Math.pow(10, Number(criteria.number)) * Math.pow(32, Number(criteria.special))))
+    : 0;
 
-  return {
-    criteria,
-    score
-  };
+  const strengthLabel = score <= 1 ? 'Weak' : score <= 3 ? 'Moderate' : score === 4 ? 'Strong' : 'Excellent';
+
+  return { criteria, score, entropyBits, strengthLabel };
 }
 
-/**
- * Validates a single field value against its configured pattern.
- * @param {string} fieldId 
- * @param {string} value 
- * @returns {boolean} Whether the field is valid
- */
 export function validateFieldValue(fieldId, value) {
   const config = FIELD_CONFIGS[fieldId];
   if (!config) return false;
 
-  const trimmed = value.trim();
+  if (fieldId === 'dob') {
+    const isValid = isAtLeast13YearsOld(String(value).trim());
+    fieldStates[fieldId] = isValid;
+    return isValid;
+  }
 
-  // If optional and empty, it's valid
-  if (!config.required && trimmed === "") {
+  if (fieldId === 'phone') {
+    const normalized = String(value).trim().replace(/[\s-]/g, '');
+    const isValid = PATTERNS.phone.test(normalized);
+    fieldStates[fieldId] = isValid;
+    return isValid;
+  }
+
+  if (fieldId === 'file') {
+    const isValid = Boolean(value instanceof File && value.size <= 2 * 1024 * 1024 && config.pattern.test(value.name));
+    fieldStates[fieldId] = isValid;
+    return isValid;
+  }
+
+  const trimmed = String(value).trim();
+
+  if (!config.required && trimmed === '') {
     fieldStates[fieldId] = true;
     return true;
   }
 
-  // If required and empty, it's invalid
-  if (trimmed === "") {
+  if (trimmed === '') {
     fieldStates[fieldId] = false;
     return false;
   }
@@ -109,10 +171,6 @@ export function validateFieldValue(fieldId, value) {
   return isValid;
 }
 
-/**
- * Verifies if all fields are valid.
- * @returns {boolean}
- */
 export function isFormValid() {
   return Object.values(fieldStates).every(Boolean);
 }

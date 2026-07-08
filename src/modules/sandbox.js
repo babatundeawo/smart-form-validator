@@ -1,150 +1,135 @@
-/**
- * Helper to escape HTML characters to prevent XSS in the live highlighter.
- */
 function escapeHtml(str) {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-/**
- * Initializes clipboard copying for form regex code snippets.
- */
+function parseRegexInput(pattern) {
+  const trimmed = pattern.trim();
+  if (!trimmed) return null;
+  const slashMatch = trimmed.match(/^\/(.*)\/([a-z]*)$/i);
+  if (slashMatch) {
+    return { pattern: slashMatch[1], flags: slashMatch[2] || 'gm' };
+  }
+  return { pattern: trimmed, flags: 'gm' };
+}
+
 export function initClipboardHelpers() {
-  const copyButtons = document.querySelectorAll(".copy-btn");
-
-  copyButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      const codeElement = button.parentElement.querySelector("code");
+  const copyButtons = document.querySelectorAll('.copy-btn');
+  copyButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const codeElement = button.parentElement?.querySelector('code');
       if (!codeElement) return;
-
       const regexText = codeElement.textContent;
-      navigator.clipboard.writeText(regexText)
-        .then(() => {
-          const originalText = button.innerHTML;
-          button.innerHTML = "✨ Copied!";
-          button.style.background = "var(--success)";
-          button.style.borderColor = "var(--success)";
-          button.style.color = "white";
-
-          setTimeout(() => {
-            button.innerHTML = originalText;
-            button.removeAttribute("style");
-          }, 1800);
-        })
-        .catch(err => {
-          console.error("Clipboard copy failed: ", err);
-        });
+      navigator.clipboard.writeText(regexText).then(() => {
+        const originalText = button.innerHTML;
+        button.innerHTML = '✨ Copied!';
+        button.style.background = 'var(--success)';
+        button.style.borderColor = 'var(--success)';
+        button.style.color = 'white';
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.removeAttribute('style');
+        }, 1800);
+      }).catch((err) => console.error('Clipboard copy failed:', err));
     });
   });
 }
 
-/**
- * Initializes and binds listeners for the live Regex Sandbox playground.
- */
 export function initRegexSandbox() {
-  const regexInput = document.getElementById("sandbox-regex");
-  const testInput = document.getElementById("sandbox-test-string");
-  const resultPanel = document.getElementById("sandbox-result-panel");
+  const regexInput = document.getElementById('sandbox-regex');
+  const testInput = document.getElementById('sandbox-test-string');
+  const resultPanel = document.getElementById('sandbox-result-panel');
+  const presetList = document.getElementById('preset-list');
+  const cheatToggle = document.getElementById('cheat-toggle');
+  const cheatSheet = document.getElementById('cheat-sheet');
 
-  if (!regexInput || !testInput || !resultPanel) return;
+  if (!regexInput || !testInput || !resultPanel || !presetList) return;
+
+  const presets = [
+    { label: 'Match an IP address', pattern: '\\d{1,3}(?:\\.\\d{1,3}){3}', sample: '192.168.1.1' },
+    { label: 'Match a hex color', pattern: '#[0-9A-Fa-f]{6}', sample: '#3B82F6' },
+    { label: 'Match a username', pattern: '^[a-zA-Z][a-zA-Z0-9_]{2,19}$', sample: 'spaceRanger_99' },
+    { label: 'Match a date', pattern: '\\d{4}-\\d{2}-\\d{2}', sample: '2026-07-08' }
+  ];
+
+  presetList.innerHTML = presets.map((preset) => `<button type="button" class="preset-btn" data-pattern="${preset.pattern}" data-sample="${preset.sample}">${preset.label}</button>`).join('');
+
+  presetList.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      regexInput.value = btn.dataset.pattern || '';
+      testInput.value = btn.dataset.sample || '';
+      runSandboxTest();
+    });
+  });
+
+  if (cheatToggle && cheatSheet) {
+    cheatToggle.addEventListener('click', () => {
+      const isHidden = cheatSheet.hasAttribute('hidden');
+      cheatSheet.toggleAttribute('hidden', !isHidden);
+      cheatToggle.textContent = isHidden ? 'Hide Cheat Sheet' : 'Show Cheat Sheet';
+    });
+  }
 
   function runSandboxTest() {
     const regexVal = regexInput.value.trim();
     const testVal = testInput.value;
 
-    // Reset panel if fields are empty
-    if (regexVal === "") {
-      resultPanel.className = "sandbox-result";
-      resultPanel.innerHTML = '<span class="sandbox-status-text"> Playground Idle</span><span class="hint">Type a pattern above to begin testing.</span>';
-      regexInput.classList.remove("invalid", "valid");
+    if (!regexVal) {
+      resultPanel.className = 'sandbox-result';
+      resultPanel.innerHTML = '<span class="sandbox-status-text">Ready to decode.</span><span class="hint">Type a pattern to begin.</span>';
+      regexInput.classList.remove('invalid', 'valid');
       return;
     }
 
     try {
-      // Build Regexp - defaults to global + multi-line to capture multiple occurrences
-      const flags = "gm";
-      const regex = new RegExp(regexVal, flags);
-      regexInput.classList.remove("invalid");
-      regexInput.classList.add("valid");
-
-      // Execute tests
-      const hasMatch = regex.test(testVal);
-      
-      // Reset index for match capturing
-      regex.lastIndex = 0;
+      const parsed = parseRegexInput(regexVal);
+      const regex = new RegExp(parsed.pattern, parsed.flags);
+      regexInput.classList.remove('invalid');
+      regexInput.classList.add('valid');
+      const matches = [...testVal.matchAll(regex)];
+      const hasMatch = matches.length > 0;
 
       if (hasMatch) {
-        resultPanel.className = "sandbox-result match-ok";
-        
-        // Retrieve matches
-        const matches = [...testVal.matchAll(regex)];
-        const matchCount = matches.length;
-
-        // Generate highlighted output safely
-        let highlightedHtml = "";
-        let lastIdx = 0;
-
-        matches.forEach(match => {
-          const matchText = match[0];
-          const startIdx = match.index;
-          const endIdx = startIdx + matchText.length;
-
-          // Append leading un-matched text
-          highlightedHtml += escapeHtml(testVal.substring(lastIdx, startIdx));
-          // Append highlighted matched text
-          highlightedHtml += `<span class="sandbox-highlight">${escapeHtml(matchText)}</span>`;
-          
-          lastIdx = endIdx;
+        let highlightedHtml = '';
+        let lastIndex = 0;
+        matches.forEach((match, index) => {
+          const start = match.index ?? 0;
+          const end = start + (match[0]?.length || 0);
+          highlightedHtml += escapeHtml(testVal.slice(lastIndex, start));
+          highlightedHtml += `<span class="sandbox-highlight sandbox-highlight-${index % 4}">${escapeHtml(match[0])}</span>`;
+          lastIndex = end;
         });
-        
-        // Append remaining text
-        highlightedHtml += escapeHtml(testVal.substring(lastIdx));
+        highlightedHtml += escapeHtml(testVal.slice(lastIndex));
 
-        // Group captures info
-        let groupsInfo = "";
-        if (matches[0] && matches[0].length > 1) {
-          groupsInfo = `<div style="margin-top: 0.5rem; font-size: 0.76rem; border-top: 1px solid var(--card-border); padding-top: 0.4rem;">`;
-          groupsInfo += `<strong>Captured Groups:</strong>`;
-          matches.forEach((m, mIdx) => {
-            groupsInfo += `<div style="margin-left: 0.4rem; color: var(--text-muted);">Match #${mIdx + 1}: `;
-            for (let g = 1; g < m.length; g++) {
-              groupsInfo += `<span style="color: var(--secondary); font-family: monospace;">Group ${g}: "${escapeHtml(m[g] || '')}"</span> `;
-            }
-            groupsInfo += `</div>`;
-          });
-          groupsInfo += `</div>`;
-        }
+        const groupsMarkup = matches.some((match) => match.length > 1)
+          ? `<div class="sandbox-groups">${matches.map((match, idx) => `<div class="group-row">Match ${idx + 1}: ${match.slice(1).map((group, groupIndex) => `<span class="group-chip">Group ${groupIndex + 1}: ${escapeHtml(group || '')}</span>`).join(' ')}</div>`).join('')}</div>`
+          : '';
 
+        resultPanel.className = 'sandbox-result match-ok';
         resultPanel.innerHTML = `
-          <div class="sandbox-status-text ok">🎉 Match Found! (${matchCount} occurrences)</div>
-          <div class="sandbox-matches-list">
-            <strong>Result preview:</strong> <div style="margin-top: 0.25rem; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 6px; white-space: pre-wrap;">${highlightedHtml}</div>
-          </div>
-          ${groupsInfo}
+          <div class="sandbox-status-text ok">🎉 Match found · ${matches.length} occurrences.</div>
+          <div class="sandbox-preview">${highlightedHtml}</div>
+          ${groupsMarkup}
         `;
       } else {
-        resultPanel.className = "sandbox-result match-fail";
+        resultPanel.className = 'sandbox-result match-fail';
         resultPanel.innerHTML = `
-          <div class="sandbox-status-text err">❌ No Match</div>
-          <div class="hint">The test string does not match the expression <code>/${regexVal}/gm</code>.</div>
+          <div class="sandbox-status-text err">❌ No match yet.</div>
+          <div class="hint">Try a broader pattern or a different test string.</div>
         `;
       }
-    } catch (err) {
-      regexInput.classList.remove("valid");
-      regexInput.classList.add("invalid");
-      resultPanel.className = "sandbox-result match-fail";
-      resultPanel.innerHTML = `
-        <div class="sandbox-status-text err">⚠️ Regex Error</div>
-        <div class="hint" style="color: var(--error); font-family: monospace;">${escapeHtml(err.message)}</div>
-      `;
+    } catch (error) {
+      regexInput.classList.remove('valid');
+      regexInput.classList.add('invalid');
+      resultPanel.className = 'sandbox-result match-fail';
+      resultPanel.innerHTML = `<div class="sandbox-status-text err">⚠️ ${escapeHtml(error.message)}</div>`;
     }
   }
 
-  // Bind sandbox tests
-  regexInput.addEventListener("input", runSandboxTest);
-  testInput.addEventListener("input", runSandboxTest);
+  regexInput.addEventListener('input', runSandboxTest);
+  testInput.addEventListener('input', runSandboxTest);
 }
